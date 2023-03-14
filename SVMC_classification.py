@@ -34,7 +34,6 @@ model.add(MaxPool2D(pool_size=(2, 2), strides=2))
 model.add(Conv2D(filters=80, padding="same", activation="relu", kernel_size=3))
 model.add(MaxPool2D(pool_size=(2, 2), strides=2))
 model.add(Dropout(0.2))
-
 model.add(Conv2D(filters=64, padding="same", activation="relu", kernel_size=3))
 model.add(MaxPool2D(pool_size=(2, 2), strides=2))
 model.add(Conv2D(filters=32, padding="same", activation="relu", kernel_size=3))
@@ -42,15 +41,20 @@ model.add(Dropout(0.2))
 model.add(Flatten())
 model.add(Dense(128, activation="relu"))
 
-model.add(Dense(1, kernel_regularizer=l2(0.01), activation="linear"))
 
+ ## For svm classification we add parameter called  “Kernel_regularizer” and inside this regularizer, 
+ # we have to use l1 or l2 norm, here I am using l2 norm and pass linear as activation function and that’s 
+ # what we did in the final output layer above in the model creation section.
+
+model.add(Dense(1, kernel_regularizer=l2(0.01), activation="linear")) 
+
+#During compiling we’ve to use hinge as a loss function.
 model.compile(optimizer="adam", loss="hinge", metrics=["accuracy"])
 
 check_pt = ModelCheckpoint(r"D:\cat and dog\model save folder\model_30.h5", monitor="val_loss",
                            mode='min', save_best_only=True)
 
-callbacks = [check_pt]
 
 train_model = model.fit_generator(train_set, validation_data=test_set, epochs=30,
                                   steps_per_epoch=train_set.samples // 16,
-                                  validation_steps=test_set.samples // 16, callbacks=callbacks)
+                                  validation_steps=test_set.samples // 16, callbacks=[check_pt])
